@@ -1,5 +1,7 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -12,11 +14,8 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "your_password")
 DB_NAME = os.getenv("DB_NAME", "your_database")
 
 SQLALCHEMY_DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-Base = declarative_base()
 
 Base = declarative_base()
 
@@ -66,28 +65,34 @@ async def create_kid(kid: models.Kid):
 
 async def get_kids(skip: int = 0, limit: int = 100):
     async with async_session() as db:
-        result = await db.execute(db.query(Kid).offset(skip).limit(limit))
+        stmt = select(Kid).offset(skip).limit(limit)
+        result = await db.execute(stmt)
         return result.scalars().all()
 
 async def get_kid(kid_id: int):
     async with async_session() as db:
-        result = await db.execute(db.query(Kid).filter(Kid.id == kid_id))
+        stmt = select(Kid).where(Kid.id == kid_id)
+        result = await db.execute(stmt)
         return result.scalar()
 
 async def update_kid(kid_id: int, kid: models.Kid):
     async with async_session() as db:
-        db_kid = await db.execute(db.query(Kid).filter(Kid.id == kid_id))
-        db_kid = db_kid.scalar()
+        stmt = select(Kid).where(Kid.id == kid_id)
+        result = await db.execute(stmt)
+        db_kid = result.scalar()
         if db_kid:
             db_kid.name = kid.name
             db_kid.age = kid.age
             await db.commit()
             await db.refresh(db_kid)
-        return db_kid
+            return db_kid
+        else:
+            raise HTTPException(status_code=404, detail="Kid not found")
 
 async def delete_kid(kid_id: int):
     async with async_session() as db:
-        db_kid = await db.execute(db.query(Kid).filter(Kid.id == kid_id))
+        stmt = select(Kid).where(Kid.id == kid_id)
+        db_kid = await db.execute(stmt)
         db_kid = db_kid.scalar()
         if db_kid:
             await db.delete(db_kid)
@@ -102,27 +107,22 @@ async def create_chore(chore: models.Chore):
         await db.refresh(db_chore)
         return db_chore
 
-async def create_reward(reward: models.Reward):
-    async with async_session() as db:
-        db_reward = Reward(**reward.dict())
-        db.add(db_reward)
-        await db.commit()
-        await db.refresh(db_reward)
-        return db_reward
-
 async def get_chores(skip: int = 0, limit: int = 100):
     async with async_session() as db:
-        result = await db.execute(db.query(Chore).offset(skip).limit(limit))
+        stmt = select(Chore).offset(skip).limit(limit)
+        result = await db.execute(stmt)
         return result.scalars().all()
 
 async def get_chore(chore_id: int):
     async with async_session() as db:
-        result = await db.execute(db.query(Chore).filter(Chore.id == chore_id))
+        stmt = select(Chore).where(Chore.id == chore_id)
+        result = await db.execute(stmt)
         return result.scalar()
 
 async def update_chore(chore_id: int, chore: models.Chore):
     async with async_session() as db:
-        db_chore = await db.execute(db.query(Chore).filter(Chore.id == chore_id))
+        stmt = select(Chore).where(Chore.id == chore_id)
+        db_chore = await db.execute(stmt)
         db_chore = db_chore.scalar()
         if db_chore:
             db_chore.name = chore.name
@@ -135,40 +135,53 @@ async def update_chore(chore_id: int, chore: models.Chore):
 
 async def delete_chore(chore_id: int):
     async with async_session() as db:
-        db_chore = await db.execute(db.query(Chore).filter(Chore.id == chore_id))
+        stmt = select(Chore).where(Chore.id == chore_id)
+        db_chore = await db.execute(stmt)
         db_chore = db_chore.scalar()
         if db_chore:
             await db.delete(db_chore)
             await db.commit()
-        return db_chore
+        return {"message": "Chore deleted"}
+
+async def create_reward(reward: models.Reward):
+    async with async_session() as db:
+        db_reward = Reward(**reward.dict())
+        db.add(db_reward)
+        await db.commit()
+        await db.refresh(db_reward)
+        return db_reward
 
 async def get_rewards(skip: int = 0, limit: int = 100):
     async with async_session() as db:
-        result = await db.execute(db.query(Reward).offset(skip).limit(limit))
+        stmt = select(Reward).offset(skip).limit(limit)
+        result = await db.execute(stmt)
         return result.scalars().all()
 
 async def get_reward(reward_id: int):
     async with async_session() as db:
-        result = await db.execute(db.query(Reward).filter(Reward.id == reward_id))
+        stmt = select(Reward).where(Reward.id == reward_id)
+        result = await db.execute(stmt)
         return result.scalar()
 
 async def update_reward(reward_id: int, reward: models.Reward):
     async with async_session() as db:
-        db_reward = await db.execute(db.query(Reward).filter(Reward.id == reward_id))
+        stmt = select(Reward).where(Reward.id == reward_id)
+        db_reward = await db.execute(stmt)
         db_reward = db_reward.scalar()
         if db_reward:
             db_reward.name = reward.name
             db_reward.description = reward.description
-            db_reward.points = reward.poi            
+            db_reward.points = reward.points
             await db.commit()
             await db.refresh(db_reward)
         return db_reward
 
 async def delete_reward(reward_id: int):
     async with async_session() as db:
-        db_reward = await db.execute(db.query(Reward).filter(Reward.id == reward_id))
+        stmt = select(Reward).where(Reward.id == reward_id)
+        db_reward = await db.execute(stmt)
         db_reward = db_reward.scalar()
         if db_reward:
             await db.delete(db_reward)
             await db.commit()
-        return db_reward
+        return {"message": "Reward deleted"}
