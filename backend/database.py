@@ -13,8 +13,6 @@ DB_NAME = os.getenv("DB_NAME", "your_database")
 
 SQLALCHEMY_DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-print(SQLALCHEMY_DATABASE_URL)
-
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
