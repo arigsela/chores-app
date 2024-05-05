@@ -5,11 +5,11 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 import models
 
-DB_HOST = os.environ.get("DB_HOST", "localhost")
-DB_PORT = os.environ.get("DB_PORT", "3306")
-DB_USER = os.environ.get("DB_USER", "your_username")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "your_password")
-DB_NAME = os.environ.get("DB_NAME", "your_database")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "3306")
+DB_USER = os.getenv("DB_USER", "your_username")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "your_password")
+DB_NAME = os.getenv("DB_NAME", "your_database")
 
 SQLALCHEMY_DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
