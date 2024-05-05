@@ -6,4 +6,4 @@ SQLAlchemy==2.0.29
 uvicorn==0.29.0
 aiomysql==0.2.0
 cryptography==42.0.6
-python-dotnev
+python-dotenv
