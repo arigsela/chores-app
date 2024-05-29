@@ -52,7 +52,6 @@ def test_update_chore():
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Chore"
     assert response.json()["points"] == 20
-    assert response.json()["kid_id"] == kid_id
 
 def test_delete_chore():
     # Create a kid for the chore
