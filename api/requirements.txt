@@ -5,4 +5,4 @@ passlib
 pymysql
 python-dotenv
 uvicorn
-jose
+python-jose
