@@ -4,7 +4,7 @@ from models import User
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 
-SECRET_KEY = "your-secret-key"
+SECRET_KEY = "your-secret-key" #nosec
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
